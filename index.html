@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本百大名城收集</title>
+    <style>
+        :root {
+            --header-bg: #2b313d; /* 雅致的深鐵藍色 */
+            --primary-color: #a73836; /* 傳統印泥紅 (深紅色) */
+            --bg-color: #f4f1ea; /* 和紙般的暖米色 */
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #666666;
+            --stamped-bg: #f2f7ec; /* 蓋章後的柔和淺綠色 */
+            --stamped-border: #d4e6c3;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang TC', '微軟正黑體', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .region-section {
+            margin-bottom: 3rem;
+        }
+        
+        details > summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details .region-title h2 {
+            margin: 0;
+            flex-grow: 1;
+        }
+        
+        .region-summary-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--primary-color);
+        }
+        .region-progress {
+            font-size: 1rem;
+            font-weight: bold;
+            background-color: #ffebee;
+            padding: 4px 12px;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        details[open] .toggle-icon {
+            transform: rotate(180deg);
+        }
+        .toggle-icon {
+            transition: transform 0.3s;
+            font-size: 1.2rem;
+        }
+        .region-title {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .card.stamped {
+            background-color: #fffafa;
+            border: 1px solid var(--primary-color);
+            box-shadow: 0 4px 12px rgba(167, 56, 54, 0.1);
+        }
+        .card.stamped::after {
+            content: "達成";
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            border: 3px double var(--primary-color);
+            border-radius: 50%;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-15deg);
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: 0;
+            font-family: "Yu Mincho", "MS Mincho", "標楷體", serif;
+            letter-spacing: 2px;
+            text-indent: 2px; /* Fix centering with letter-spacing */
+        }
+        .card-header {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.8rem;
+            z-index: 1; /* Keep text above the stamp */
+            position: relative;
+        }
+        .castle-no {
+            background-color: #e0e0e0;
+            color: #555;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .stamped .castle-no {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .castle-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 0;
+            padding-right: 10px;
+        }
+        .info-row {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .info-label {
+            font-weight: bold;
+            color: var(--text-light);
+            margin-right: 5px;
+            display: inline-block;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            margin-top: auto;
+            align-self: flex-start;
+        }
+        .action-area {
+            margin-top: 1rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-light);
+            user-select: none;
+            width: 100%;
+            transition: color 0.2s;
+        }
+        .card.stamped .checkbox-container {
+            color: var(--primary-color);
+        }
+        .checkbox-container input {
+            width: 22px;
+            height: 22px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        /* 手機版專屬調整 (Mobile Responsiveness) */
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+            .grid {
+                grid-template-columns: 1fr; /* 強制單欄排列 */
+                gap: 1rem;
+            }
+            .card {
+                padding: 1rem;
+            }
+        }
+    
+        .hero {
+            width: 100%;
+            height: 45vh;
+            min-height: 350px;
+            background-image: url('hero_banner.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            padding: 0 1rem;
+        }
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+            letter-spacing: 2px;
+        }
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-top: 15px;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+        }
+        .stats-pill {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* Sticky Bar */
+        .sticky-bar {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            z-index: 100;
+            padding: 12px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .sticky-bar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sticky-title {
+            font-weight: bold;
+            color: var(--text-main);
+            font-size: 1.2rem;
+        }
+        .sticky-stats {
+            font-weight: bold;
+            color: var(--primary-color);
+            background: rgba(167, 56, 54, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                height: 35vh;
+                min-height: 300px;
+            }
+            .hero-title {
+                font-size: 2rem;
+            }
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            .stats-pill {
+                font-size: 1.1rem;
+                padding: 10px 20px;
+            }
+            .sticky-title {
+                font-size: 1rem;
+            }
+            .sticky-stats {
+                font-size: 0.9rem;
+            }
+        }
+
+    
+        
+        .stamp-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .stamp-label {
+            margin-bottom: 2px;
+        }
+        .stamp-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .stamp-pill {
+            background-color: #f1f5f9;
+            color: #334155;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+        }
+        .stamp-pill:hover {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+</style>
+</head>
+<body>
+    <div class="hero">
+        <div class="hero-overlay">
+            <h1 class="hero-title">🏯 日本百大名城收集</h1>
+            <p class="hero-subtitle">走訪日本各地，收集屬於您的名城印章</p>
+            <div class="stats-pill">
+                已蓋章: <span id="stamp-count">0</span> / 100
+            </div>
+        </div>
+    </div>
+
+    <div class="sticky-bar">
+        <div class="sticky-bar-content">
+            <span class="sticky-title">🏯 百大名城收集</span>
+            <span class="sticky-stats">進度: <span id="floating-stamp-count">0</span> / 100</span>
+        </div>
+    </div>
+
+
+    <div class="container" id="app">
+        <!-- Content will be injected here -->
+    </div>
+
+    <script>
+        const castles = [{"region": "北海道", "no": "1", "name": "根室半島砦跡群", "location": "北海道根室市", "stamp": "根室市歷史與自然資料館、根室市觀光諮詢中心（根室站前）、根室市北方領土資料館", "status": "城跡"}, {"region": "北海道", "no": "2", "name": "五稜郭", "location": "北海道函館市", "stamp": "箱館奉行所附屬建物「板庫（休憩所）」入口左側的印章攤（室外）", "status": "城跡"}, {"region": "北海道", "no": "3", "name": "松前城", "location": "北海道松前町", "stamp": "松前城資料館施設内", "status": "城跡"}, {"region": "東北", "no": "4", "name": "弘前城", "location": "青森縣弘前市", "stamp": "弘前城情報館", "status": "天守"}, {"region": "東北", "no": "5", "name": "根城", "location": "青森縣八戶市", "stamp": "史跡根城廣場料金所、八戶市博物館接待處、史跡根城志工解說處窗口", "status": "城跡"}, {"region": "東北", "no": "6", "name": "盛岡城", "location": "岩手縣盛岡市", "stamp": "Plaza Odette 2樓觀光文化情報廣場、盛岡歴史文化館", "status": "城跡"}, {"region": "東北", "no": "7", "name": "多賀城", "location": "宮城縣多賀城市", "stamp": "多賀城跡導覽設施（多賀城南門南側）、多賀城観光案内所", "status": "城跡"}, {"region": "東北", "no": "8", "name": "仙台城", "location": "宮城縣仙台市", "stamp": "仙台城見聞館展示處", "status": "城跡"}, {"region": "東北", "no": "9", "name": "久保田城", "location": "秋田縣秋田市", "stamp": "秋田市立佐竹史料館、久保田城御隅櫓", "status": "城跡"}, {"region": "東北", "no": "10", "name": "山形城", "location": "山形縣山形市", "stamp": "最上義光歴史館、山形市鄉土館接待處窗口、二之丸東大手門櫓内部", "status": "城跡"}, {"region": "東北", "no": "11", "name": "二本松城", "location": "福島縣二本松市", "stamp": "二本松城報館、JR二本松站内観光案内所", "status": "城跡"}, {"region": "東北", "no": "12", "name": "會津若松城", "location": "福島縣會津若松市", "stamp": "天守閣内賣店", "status": "城跡"}, {"region": "東北", "no": "13", "name": "白河小峰城", "location": "福島縣白河市", "stamp": "三重櫓、二之丸茶屋、白河観光物産協会、白河修古苑", "status": "城跡"}, {"region": "關東", "no": "14", "name": "水戶城 （弘道館）", "location": "茨城縣水戶市", "stamp": "弘道館料金所窗口", "status": "城跡"}, {"region": "關東", "no": "15", "name": "足利氏館 （鑁阿寺）", "location": "栃木縣足利市", "stamp": "鑁阿寺本堂（國寶）", "status": "城跡"}, {"region": "關東", "no": "16", "name": "箕輪城", "location": "群馬縣高崎市", "stamp": "高崎市役所箕鄉支所接待處窗口（箕鄉公民館）、箕郷矢原宿カフェ", "status": "城跡"}, {"region": "關東", "no": "17", "name": "新田金山城", "location": "群馬縣太田市", "stamp": "中島紀念公園（史跡金山城跡・南曲輪）休憩施設内", "status": "城跡"}, {"region": "關東", "no": "18", "name": "鉢形城", "location": "埼玉縣寄居町", "stamp": "鉢形城歴史館接待處", "status": "城跡"}, {"region": "關東", "no": "19", "name": "川越城", "location": "埼玉縣川越市", "stamp": "川越城本丸御殿接待處窗口", "status": "城跡"}, {"region": "關東", "no": "20", "name": "佐倉城", "location": "千葉縣佐倉市", "stamp": "佐倉城址公園管理中心、国立歴史民俗博物館", "status": "城跡"}, {"region": "關東", "no": "21", "name": "江戶城", "location": "東京都千代田區", "stamp": "楠公休憩場、和田倉休憩場、北之丸休憩場", "status": "城跡"}, {"region": "關東", "no": "22", "name": "八王子城", "location": "東京都八王子市", "stamp": "八王子城跡管理棟前、引導設施", "status": "城跡"}, {"region": "關東", "no": "23", "name": "小田原城", "location": "神奈川縣小田原市", "stamp": "天守閣1樓", "status": "城跡"}, {"region": "甲信越", "no": "24", "name": "武田氏館 （武田神社）", "location": "山梨縣甲府市", "stamp": "武田神社寶物殿入口、武田神社神府集札授與所", "status": "城跡"}, {"region": "甲信越", "no": "25", "name": "甲府城", "location": "山梨縣甲府市", "stamp": "舞鶴城公園管理事務所、甲府城稻荷櫓", "status": "城跡"}, {"region": "甲信越", "no": "26", "name": "松代城", "location": "長野縣長野市", "stamp": "真田邸", "status": "城跡"}, {"region": "甲信越", "no": "27", "name": "上田城", "location": "長野縣上田市", "stamp": "上田市立博物館、上田市觀光會館", "status": "城跡"}, {"region": "甲信越", "no": "28", "name": "小諸城", "location": "長野縣小諸市", "stamp": "懷古園事務所", "status": "城跡"}, {"region": "甲信越", "no": "29", "name": "松本城", "location": "長野縣松本市", "stamp": "松本城管理事務所", "status": "天守"}, {"region": "甲信越", "no": "30", "name": "高遠城", "location": "長野縣伊那市", "stamp": "伊那市立高遠町歴史博物館", "status": "城跡"}, {"region": "甲信越", "no": "31", "name": "新發田城", "location": "新潟縣新發田市", "stamp": "新發田城辰巳櫓内（12月～3月在市立圖書館）", "status": "櫓"}, {"region": "甲信越", "no": "32", "name": "春日山城", "location": "新潟縣上越市", "stamp": "春日山城跡故事館（12月～2月在市埋藏文化財中心）", "status": "城跡"}, {"region": "北陸", "no": "33", "name": "高岡城", "location": "富山縣高岡市", "stamp": "高岡市立博物館（鍛冶丸跡）", "status": "城跡"}, {"region": "北陸", "no": "34", "name": "七尾城", "location": "石川縣七尾市", "stamp": "七尾城史資料館（12月11日～3月10日在七尾市教育委員會文化財課（七尾市役所内））", "status": "城跡"}, {"region": "北陸", "no": "35", "name": "金澤城", "location": "石川縣金澤市", "stamp": "二之丸案内所、石川門入口案内所", "status": "城跡"}, {"region": "北陸", "no": "36", "name": "丸岡城", "location": "福井縣坂井市", "stamp": "霞城公園管理事務所", "status": "天守"}, {"region": "北陸", "no": "37", "name": "一乘谷城", "location": "福井縣福井市", "stamp": "復原町並入口（南・北）", "status": "城跡"}, {"region": "東海", "no": "38", "name": "岩村城", "location": "岐阜縣恵那市", "stamp": "岩村歴史資料館受付窗口", "status": "城跡"}, {"region": "東海", "no": "39", "name": "岐阜城", "location": "岐阜縣岐阜市", "stamp": "岐阜城資料館", "status": "城跡"}, {"region": "東海", "no": "40", "name": "山中城", "location": "靜岡縣三島市", "stamp": "山中城跡販賣部内", "status": "城跡"}, {"region": "東海", "no": "41", "name": "駿府城", "location": "靜岡縣靜岡市", "stamp": "東御門券賣所、坤櫓券賣所", "status": "城跡"}, {"region": "東海", "no": "42", "name": "掛川城", "location": "靜岡縣掛川市", "stamp": "掛川城御殿", "status": "城跡"}, {"region": "東海", "no": "43", "name": "犬山城", "location": "愛知縣犬山市", "stamp": "犬山城管理事務所", "status": "天守"}, {"region": "東海", "no": "44", "name": "名古屋城", "location": "愛知縣名古屋市", "stamp": "正門剪票口、東門剪票口、綜合案内所", "status": "城跡"}, {"region": "東海", "no": "45", "name": "岡崎城", "location": "愛知縣岡崎市", "stamp": "天守1樓", "status": "城跡"}, {"region": "東海", "no": "46", "name": "長篠城", "location": "愛知縣新城市", "stamp": "新城市長篠城址史跡保存館窗口", "status": "城跡"}, {"region": "東海", "no": "47", "name": "伊賀上野城", "location": "三重縣伊賀市", "stamp": "大天守閣1樓", "status": "城跡"}, {"region": "東海", "no": "48", "name": "松坂城", "location": "三重縣松阪市", "stamp": "松阪市立歴史民俗資料館、本居宣長紀念館（兩館休館日時在松阪市觀光中心）", "status": "城跡"}, {"region": "近畿", "no": "49", "name": "小谷城", "location": "滋賀縣長濱市", "stamp": "小谷城戰國歴史資料館　周二休館日在長濱市役所湖北支所", "status": "城跡"}, {"region": "近畿", "no": "50", "name": "彥根城", "location": "滋賀縣彥根市", "stamp": "彥根市開國紀念館[1]", "status": "天守"}, {"region": "近畿", "no": "51", "name": "安土城", "location": "滋賀縣近江八幡市", "stamp": "安土城天主信長之館、安土城郭資料館、安土城跡受付", "status": "城跡"}, {"region": "近畿", "no": "52", "name": "觀音寺城", "location": "滋賀縣近江八幡市", "stamp": "石寺樂市會館（12月中旬～3月上旬中止） 觀音正寺、桑實寺受付、安土城郭資料館", "status": "城跡"}, {"region": "近畿", "no": "53", "name": "二条城", "location": "京都府京都市", "stamp": "大休憩所", "status": "城跡"}, {"region": "近畿", "no": "54", "name": "大阪城", "location": "大阪府大阪市", "stamp": "天守閣1樓資訊處", "status": "城跡"}, {"region": "近畿", "no": "55", "name": "千早城", "location": "大阪府千早赤阪村", "stamp": "金剛山 山の豆腐[2]、千早城跡茶屋（不定期）", "status": "城跡"}, {"region": "近畿", "no": "56", "name": "竹田城", "location": "兵庫縣朝來市", "stamp": "JR竹田站、和田山觀光案内所「山城之鄉」", "status": "城跡"}, {"region": "近畿", "no": "57", "name": "篠山城", "location": "兵庫縣丹波篠山市", "stamp": "大書院館内", "status": "城跡"}, {"region": "近畿", "no": "58", "name": "明石城", "location": "兵庫縣明石市", "stamp": "明石公園服務中心受付窗口", "status": "城跡"}, {"region": "近畿", "no": "59", "name": "姬路城", "location": "兵庫縣姬路市", "stamp": "姬路城管理處", "status": "天守"}, {"region": "近畿", "no": "60", "name": "赤穗城", "location": "兵庫縣赤穗市", "stamp": "本丸櫓門下", "status": "城跡"}, {"region": "近畿", "no": "61", "name": "高取城", "location": "奈良縣高取町", "stamp": "高取町觀光案内所「夢創館」", "status": "城跡"}, {"region": "近畿", "no": "62", "name": "和歌山城", "location": "和歌山縣和歌山市", "stamp": "和歌山城天守閣楠門受付", "status": "城跡"}, {"region": "中國", "no": "63", "name": "鳥取城", "location": "鳥取縣鳥取市", "stamp": "鳥取城跡内「仁風閣」内", "status": "城跡"}, {"region": "中國", "no": "64", "name": "松江城", "location": "島根縣松江市", "stamp": "松江城天守内受付窗口", "status": "天守"}, {"region": "中國", "no": "65", "name": "月山富田城", "location": "島根縣安來市", "stamp": "安來市立歴史資料館", "status": "城跡"}, {"region": "中國", "no": "66", "name": "津和野城", "location": "島根縣津和野町", "stamp": "リフト茶屋", "status": "城跡"}, {"region": "中國", "no": "67", "name": "津山城", "location": "岡山縣津山市", "stamp": "津山城備中櫓受付", "status": "城跡"}, {"region": "中國", "no": "68", "name": "備中松山城", "location": "岡山縣高梁市", "stamp": "備中松山城券売所", "status": "天守"}, {"region": "中國", "no": "69", "name": "鬼之城", "location": "岡山縣總社市", "stamp": "鬼城山遊客中心", "status": "城跡"}, {"region": "中國", "no": "70", "name": "岡山城", "location": "岡山縣岡山市", "stamp": "岡山城天守閣入口", "status": "城跡"}, {"region": "中國", "no": "71", "name": "福山城", "location": "廣島縣福山市", "stamp": "福山城天守閣内(售票口)", "status": "城跡"}, {"region": "中國", "no": "72", "name": "郡山城", "location": "廣島縣安藝高田市", "stamp": "安藝高田市吉田歴史民俗資料館", "status": "城跡"}, {"region": "中國", "no": "73", "name": "廣島城", "location": "廣島縣廣島市", "stamp": "1樓博物館商店", "status": "城跡"}, {"region": "中國", "no": "74", "name": "岩國城", "location": "山口縣岩國市", "stamp": "岩國城受付窗口(天守內)", "status": "城跡"}, {"region": "中國", "no": "75", "name": "萩城", "location": "山口縣萩市", "stamp": "本丸入口料金所", "status": "城跡"}, {"region": "四國", "no": "76", "name": "德島城", "location": "德島縣德島市", "stamp": "徳島市立徳島城博物館受付窗口 德島市教育委員會社會教育課程窗口 德島中央公園東側駐車場入口事務所", "status": "城跡"}, {"region": "四國", "no": "77", "name": "高松城", "location": "香川縣高松市", "stamp": "高松城東・西入口 玉藻公園管理事務所", "status": "城跡"}, {"region": "四國", "no": "78", "name": "丸龜城", "location": "香川縣丸龜市", "stamp": "丸龜城天守（天守閉館期間在丸龜市立資料館）", "status": "天守"}, {"region": "四國", "no": "79", "name": "今治城", "location": "愛媛縣今治市", "stamp": "今治城管理事務所（天守閣内）", "status": "城跡"}, {"region": "四國", "no": "80", "name": "湯築城", "location": "愛媛縣松山市", "stamp": "湯築城資料館", "status": "城跡"}, {"region": "四國", "no": "81", "name": "松山城", "location": "愛媛縣松山市", "stamp": "松山城天守入口", "status": "天守"}, {"region": "四國", "no": "82", "name": "大洲城", "location": "愛媛縣大洲市", "stamp": "台所櫓入口（大洲城内入口）", "status": "城跡"}, {"region": "四國", "no": "83", "name": "宇和島城", "location": "愛媛縣宇和島市", "stamp": "宇和島城天守", "status": "天守"}, {"region": "四國", "no": "84", "name": "高知城", "location": "高知縣高知市", "stamp": "本丸御殿入口", "status": "天守"}, {"region": "九州", "no": "85", "name": "福岡城", "location": "福岡縣福岡市", "stamp": "福岡城往昔探訪館、鴻臚館跡展示館", "status": "城跡"}, {"region": "九州", "no": "86", "name": "大野城", "location": "福岡縣大野城市", "stamp": "福岡縣立四王寺縣民之森管理事務所、太宰府市文化ふれあい館、大宰府展示館、大野城市綜合体育館", "status": "城跡"}, {"region": "九州", "no": "87", "name": "名護屋城", "location": "佐賀縣唐津市", "stamp": "佐賀縣立名護屋城博物館", "status": "城跡"}, {"region": "九州", "no": "88", "name": "吉野里", "location": "佐賀縣吉野里町", "stamp": "吉野里歴史公園東口", "status": "城跡"}, {"region": "九州", "no": "89", "name": "佐賀城", "location": "佐賀縣佐賀市", "stamp": "佐賀城本丸歴史館受付", "status": "城跡"}, {"region": "九州", "no": "90", "name": "平戶城", "location": "長崎縣平戶市", "stamp": "平戶城天守閣", "status": "城跡"}, {"region": "九州", "no": "91", "name": "島原城", "location": "長崎縣島原市", "stamp": "島原城受付窗口", "status": "城跡"}, {"region": "九州", "no": "92", "name": "熊本城", "location": "熊本縣熊本市", "stamp": "頰當御門、櫨方門、須戶口門、不開門（2016年熊本地震後，改在櫻之馬場遊客服務處，及熊本城二之丸停車場內之「熊本城二之丸憩所」）", "status": "城跡"}, {"region": "九州", "no": "93", "name": "人吉城", "location": "熊本縣人吉市", "stamp": "人吉城歷史館", "status": "城跡"}, {"region": "九州", "no": "94", "name": "大分府内城", "location": "大分縣大分市", "stamp": "大分城址公園内、文化會館北西側事務所2樓出入口", "status": "城跡"}, {"region": "九州", "no": "95", "name": "岡城", "location": "大分縣竹田市", "stamp": "觀覧料徴收所（総役所跡）", "status": "城跡"}, {"region": "九州", "no": "96", "name": "飫肥城", "location": "宮崎縣日南市", "stamp": "飫肥城歴史資料館", "status": "城跡"}, {"region": "九州", "no": "97", "name": "鹿兒島城", "location": "鹿兒島縣鹿兒島市", "stamp": "鹿兒島縣歴史資料中心黎明館内綜合案内所", "status": "城跡"}, {"region": "沖繩", "no": "98", "name": "今歸仁城", "location": "沖繩縣今歸仁村", "stamp": "今歸仁村御城交流中心", "status": "城跡"}, {"region": "沖繩", "no": "99", "name": "中城城", "location": "沖繩縣中城村", "stamp": "管理事務所窗口", "status": "城跡"}, {"region": "沖繩", "no": "100", "name": "首里城", "location": "沖繩縣那霸市", "stamp": "首里杜館、系圖座・用物座、北殿", "status": "城跡"}];
+        
+        // Group by region
+        const regions = {};
+        castles.forEach(c => {
+            if (!regions[c.region]) regions[c.region] = [];
+            regions[c.region].push(c);
+        });
+
+        // Load saved state from localStorage
+        const savedStamps = JSON.parse(localStorage.getItem('japan100castles_stamps')) || {};
+
+        const appDiv = document.getElementById('app');
+        
+        function updateStats() {
+            const count = Object.values(savedStamps).filter(v => v).length;
+            document.getElementById('stamp-count').innerText = count;
+            document.getElementById('floating-stamp-count').innerText = count;
+            
+            for (const [region, regionCastles] of Object.entries(regions)) {
+                const regionCount = regionCastles.filter(c => savedStamps[c.no]).length;
+                const regionCountSpan = document.getElementById(`count-${region}`);
+                if (regionCountSpan) {
+                    regionCountSpan.innerText = regionCount;
+                }
+            }
+        }
+
+        function toggleStamp(no) {
+            savedStamps[no] = !savedStamps[no];
+            localStorage.setItem('japan100castles_stamps', JSON.stringify(savedStamps));
+            
+            const card = document.getElementById(`card-${no}`);
+            if(savedStamps[no]) {
+                card.classList.add('stamped');
+            } else {
+                card.classList.remove('stamped');
+            }
+            updateStats();
+        }
+
+        let html = '';
+        for (const [region, regionCastles] of Object.entries(regions)) {
+            html += `
+                <details class="region-section" open>
+                    <summary class="region-title">
+                        <h2>${region}</h2>
+                        <div class="region-summary-right">
+                            <span class="region-progress"><span id="count-${region}">0</span> / ${regionCastles.length}</span>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                    </summary>
+                    <div class="grid">
+            `;
+            
+            regionCastles.forEach(c => {
+                const isStamped = savedStamps[c.no] ? 'stamped' : '';
+                const isChecked = savedStamps[c.no] ? 'checked' : '';
+                
+                const stamps = c.stamp.split(/[、，,]+/).map(s => s.trim()).filter(s => s);
+                let stampsHtml = '';
+                stamps.forEach(s => {
+                    const mapQuery = encodeURIComponent(c.location + ' ' + s);
+                    stampsHtml += `<a href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" target="_blank" class="stamp-pill">📍 ${s}</a>`;
+                });
+                
+                html += `
+                    <div class="card ${isStamped}" id="card-${c.no}">
+                        <div class="card-header">
+                            <span class="castle-no">No.${c.no}</span>
+                            <h3 class="castle-name">${c.name}</h3>
+                        </div>
+                        <div class="info-row"><span class="info-label">📍 實際地點:</span>${c.location}</div>
+                        <div class="info-row stamp-row">
+                            <div class="info-label stamp-label">💮 蓋章地點:</div>
+                            <div class="stamp-pills">
+                                ${stampsHtml}
+                            </div>
+                        </div>
+                        <div class="status-badge">🏛️ ${c.status}</div>
+                        <div class="action-area">
+                            <label class="checkbox-container">
+                                <input type="checkbox" onchange="toggleStamp('${c.no}')" ${isChecked}>
+                                我已完成蓋章！
+                            </label>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </details>
+            `;
+        }
+        
+        appDiv.innerHTML = html;
+        updateStats();
+    </script>
+</body>
+</html>
