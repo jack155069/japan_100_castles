@@ -366,7 +366,20 @@
     <div class="sticky-bar">
         <div class="sticky-bar-content">
             <span class="sticky-title">🏯 百大名城收集</span>
-            <span class="sticky-stats">進度: <span id="floating-stamp-count">0</span> / 100</span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span class="sticky-stats">進度: <span id="floating-stamp-count">0</span> / 100</span>
+                <div id="auth-container">
+                    <button id="login-btn" style="padding: 5px 12px; cursor: pointer; background: white; color: #4285F4; border: 1px solid #4285F4; border-radius: 4px; font-weight: bold; display: flex; align-items: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                        Google 登入
+                    </button>
+                    <div id="user-info" style="display: none; align-items: center; gap: 10px;">
+                        <img id="user-avatar" src="" style="width: 24px; height: 24px; border-radius: 50%;" />
+                        <span id="user-name" style="font-size: 0.9rem; color: var(--text-main); font-weight: bold;"></span>
+                        <button id="logout-btn" style="padding: 4px 8px; cursor: pointer; background: #f44336; color: white; border: none; border-radius: 4px; font-size: 0.8rem;">登出</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -375,7 +388,26 @@
         <!-- Content will be injected here -->
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyB6ZUsMTh7xrEM2eL1QgJVQo0zPpNpEqkI",
+          authDomain: "japan100castles.firebaseapp.com",
+          projectId: "japan100castles",
+          storageBucket: "japan100castles.firebasestorage.app",
+          messagingSenderId: "648847866213",
+          appId: "1:648847866213:web:21a27d9a7b867e753bc98c",
+          measurementId: "G-GNMM1QV8WD"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let currentUser = null;
         const castles = [{"region": "北海道", "no": "1", "name": "根室半島砦跡群", "location": "北海道根室市", "stamp": "根室市歷史與自然資料館、根室市觀光諮詢中心（根室站前）、根室市北方領土資料館", "status": "城跡"}, {"region": "北海道", "no": "2", "name": "五稜郭", "location": "北海道函館市", "stamp": "箱館奉行所附屬建物「板庫（休憩所）」入口左側的印章攤（室外）", "status": "城跡"}, {"region": "北海道", "no": "3", "name": "松前城", "location": "北海道松前町", "stamp": "松前城資料館施設内", "status": "城跡"}, {"region": "東北", "no": "4", "name": "弘前城", "location": "青森縣弘前市", "stamp": "弘前城情報館", "status": "天守"}, {"region": "東北", "no": "5", "name": "根城", "location": "青森縣八戶市", "stamp": "史跡根城廣場料金所、八戶市博物館接待處、史跡根城志工解說處窗口", "status": "城跡"}, {"region": "東北", "no": "6", "name": "盛岡城", "location": "岩手縣盛岡市", "stamp": "Plaza Odette 2樓觀光文化情報廣場、盛岡歴史文化館", "status": "城跡"}, {"region": "東北", "no": "7", "name": "多賀城", "location": "宮城縣多賀城市", "stamp": "多賀城跡導覽設施（多賀城南門南側）、多賀城観光案内所", "status": "城跡"}, {"region": "東北", "no": "8", "name": "仙台城", "location": "宮城縣仙台市", "stamp": "仙台城見聞館展示處", "status": "城跡"}, {"region": "東北", "no": "9", "name": "久保田城", "location": "秋田縣秋田市", "stamp": "秋田市立佐竹史料館、久保田城御隅櫓", "status": "城跡"}, {"region": "東北", "no": "10", "name": "山形城", "location": "山形縣山形市", "stamp": "最上義光歴史館、山形市鄉土館接待處窗口、二之丸東大手門櫓内部", "status": "城跡"}, {"region": "東北", "no": "11", "name": "二本松城", "location": "福島縣二本松市", "stamp": "二本松城報館、JR二本松站内観光案内所", "status": "城跡"}, {"region": "東北", "no": "12", "name": "會津若松城", "location": "福島縣會津若松市", "stamp": "天守閣内賣店", "status": "城跡"}, {"region": "東北", "no": "13", "name": "白河小峰城", "location": "福島縣白河市", "stamp": "三重櫓、二之丸茶屋、白河観光物産協会、白河修古苑", "status": "城跡"}, {"region": "關東", "no": "14", "name": "水戶城 （弘道館）", "location": "茨城縣水戶市", "stamp": "弘道館料金所窗口", "status": "城跡"}, {"region": "關東", "no": "15", "name": "足利氏館 （鑁阿寺）", "location": "栃木縣足利市", "stamp": "鑁阿寺本堂（國寶）", "status": "城跡"}, {"region": "關東", "no": "16", "name": "箕輪城", "location": "群馬縣高崎市", "stamp": "高崎市役所箕鄉支所接待處窗口（箕鄉公民館）、箕郷矢原宿カフェ", "status": "城跡"}, {"region": "關東", "no": "17", "name": "新田金山城", "location": "群馬縣太田市", "stamp": "中島紀念公園（史跡金山城跡・南曲輪）休憩施設内", "status": "城跡"}, {"region": "關東", "no": "18", "name": "鉢形城", "location": "埼玉縣寄居町", "stamp": "鉢形城歴史館接待處", "status": "城跡"}, {"region": "關東", "no": "19", "name": "川越城", "location": "埼玉縣川越市", "stamp": "川越城本丸御殿接待處窗口", "status": "城跡"}, {"region": "關東", "no": "20", "name": "佐倉城", "location": "千葉縣佐倉市", "stamp": "佐倉城址公園管理中心、国立歴史民俗博物館", "status": "城跡"}, {"region": "關東", "no": "21", "name": "江戶城", "location": "東京都千代田區", "stamp": "楠公休憩場、和田倉休憩場、北之丸休憩場", "status": "城跡"}, {"region": "關東", "no": "22", "name": "八王子城", "location": "東京都八王子市", "stamp": "八王子城跡管理棟前、引導設施", "status": "城跡"}, {"region": "關東", "no": "23", "name": "小田原城", "location": "神奈川縣小田原市", "stamp": "天守閣1樓", "status": "城跡"}, {"region": "甲信越", "no": "24", "name": "武田氏館 （武田神社）", "location": "山梨縣甲府市", "stamp": "武田神社寶物殿入口、武田神社神府集札授與所", "status": "城跡"}, {"region": "甲信越", "no": "25", "name": "甲府城", "location": "山梨縣甲府市", "stamp": "舞鶴城公園管理事務所、甲府城稻荷櫓", "status": "城跡"}, {"region": "甲信越", "no": "26", "name": "松代城", "location": "長野縣長野市", "stamp": "真田邸", "status": "城跡"}, {"region": "甲信越", "no": "27", "name": "上田城", "location": "長野縣上田市", "stamp": "上田市立博物館、上田市觀光會館", "status": "城跡"}, {"region": "甲信越", "no": "28", "name": "小諸城", "location": "長野縣小諸市", "stamp": "懷古園事務所", "status": "城跡"}, {"region": "甲信越", "no": "29", "name": "松本城", "location": "長野縣松本市", "stamp": "松本城管理事務所", "status": "天守"}, {"region": "甲信越", "no": "30", "name": "高遠城", "location": "長野縣伊那市", "stamp": "伊那市立高遠町歴史博物館", "status": "城跡"}, {"region": "甲信越", "no": "31", "name": "新發田城", "location": "新潟縣新發田市", "stamp": "新發田城辰巳櫓内（12月～3月在市立圖書館）", "status": "櫓"}, {"region": "甲信越", "no": "32", "name": "春日山城", "location": "新潟縣上越市", "stamp": "春日山城跡故事館（12月～2月在市埋藏文化財中心）", "status": "城跡"}, {"region": "北陸", "no": "33", "name": "高岡城", "location": "富山縣高岡市", "stamp": "高岡市立博物館（鍛冶丸跡）", "status": "城跡"}, {"region": "北陸", "no": "34", "name": "七尾城", "location": "石川縣七尾市", "stamp": "七尾城史資料館（12月11日～3月10日在七尾市教育委員會文化財課（七尾市役所内））", "status": "城跡"}, {"region": "北陸", "no": "35", "name": "金澤城", "location": "石川縣金澤市", "stamp": "二之丸案内所、石川門入口案内所", "status": "城跡"}, {"region": "北陸", "no": "36", "name": "丸岡城", "location": "福井縣坂井市", "stamp": "霞城公園管理事務所", "status": "天守"}, {"region": "北陸", "no": "37", "name": "一乘谷城", "location": "福井縣福井市", "stamp": "復原町並入口（南・北）", "status": "城跡"}, {"region": "東海", "no": "38", "name": "岩村城", "location": "岐阜縣恵那市", "stamp": "岩村歴史資料館受付窗口", "status": "城跡"}, {"region": "東海", "no": "39", "name": "岐阜城", "location": "岐阜縣岐阜市", "stamp": "岐阜城資料館", "status": "城跡"}, {"region": "東海", "no": "40", "name": "山中城", "location": "靜岡縣三島市", "stamp": "山中城跡販賣部内", "status": "城跡"}, {"region": "東海", "no": "41", "name": "駿府城", "location": "靜岡縣靜岡市", "stamp": "東御門券賣所、坤櫓券賣所", "status": "城跡"}, {"region": "東海", "no": "42", "name": "掛川城", "location": "靜岡縣掛川市", "stamp": "掛川城御殿", "status": "城跡"}, {"region": "東海", "no": "43", "name": "犬山城", "location": "愛知縣犬山市", "stamp": "犬山城管理事務所", "status": "天守"}, {"region": "東海", "no": "44", "name": "名古屋城", "location": "愛知縣名古屋市", "stamp": "正門剪票口、東門剪票口、綜合案内所", "status": "城跡"}, {"region": "東海", "no": "45", "name": "岡崎城", "location": "愛知縣岡崎市", "stamp": "天守1樓", "status": "城跡"}, {"region": "東海", "no": "46", "name": "長篠城", "location": "愛知縣新城市", "stamp": "新城市長篠城址史跡保存館窗口", "status": "城跡"}, {"region": "東海", "no": "47", "name": "伊賀上野城", "location": "三重縣伊賀市", "stamp": "大天守閣1樓", "status": "城跡"}, {"region": "東海", "no": "48", "name": "松坂城", "location": "三重縣松阪市", "stamp": "松阪市立歴史民俗資料館、本居宣長紀念館（兩館休館日時在松阪市觀光中心）", "status": "城跡"}, {"region": "近畿", "no": "49", "name": "小谷城", "location": "滋賀縣長濱市", "stamp": "小谷城戰國歴史資料館　周二休館日在長濱市役所湖北支所", "status": "城跡"}, {"region": "近畿", "no": "50", "name": "彥根城", "location": "滋賀縣彥根市", "stamp": "彥根市開國紀念館[1]", "status": "天守"}, {"region": "近畿", "no": "51", "name": "安土城", "location": "滋賀縣近江八幡市", "stamp": "安土城天主信長之館、安土城郭資料館、安土城跡受付", "status": "城跡"}, {"region": "近畿", "no": "52", "name": "觀音寺城", "location": "滋賀縣近江八幡市", "stamp": "石寺樂市會館（12月中旬～3月上旬中止） 觀音正寺、桑實寺受付、安土城郭資料館", "status": "城跡"}, {"region": "近畿", "no": "53", "name": "二条城", "location": "京都府京都市", "stamp": "大休憩所", "status": "城跡"}, {"region": "近畿", "no": "54", "name": "大阪城", "location": "大阪府大阪市", "stamp": "天守閣1樓資訊處", "status": "城跡"}, {"region": "近畿", "no": "55", "name": "千早城", "location": "大阪府千早赤阪村", "stamp": "金剛山 山の豆腐[2]、千早城跡茶屋（不定期）", "status": "城跡"}, {"region": "近畿", "no": "56", "name": "竹田城", "location": "兵庫縣朝來市", "stamp": "JR竹田站、和田山觀光案内所「山城之鄉」", "status": "城跡"}, {"region": "近畿", "no": "57", "name": "篠山城", "location": "兵庫縣丹波篠山市", "stamp": "大書院館内", "status": "城跡"}, {"region": "近畿", "no": "58", "name": "明石城", "location": "兵庫縣明石市", "stamp": "明石公園服務中心受付窗口", "status": "城跡"}, {"region": "近畿", "no": "59", "name": "姬路城", "location": "兵庫縣姬路市", "stamp": "姬路城管理處", "status": "天守"}, {"region": "近畿", "no": "60", "name": "赤穗城", "location": "兵庫縣赤穗市", "stamp": "本丸櫓門下", "status": "城跡"}, {"region": "近畿", "no": "61", "name": "高取城", "location": "奈良縣高取町", "stamp": "高取町觀光案内所「夢創館」", "status": "城跡"}, {"region": "近畿", "no": "62", "name": "和歌山城", "location": "和歌山縣和歌山市", "stamp": "和歌山城天守閣楠門受付", "status": "城跡"}, {"region": "中國", "no": "63", "name": "鳥取城", "location": "鳥取縣鳥取市", "stamp": "鳥取城跡内「仁風閣」内", "status": "城跡"}, {"region": "中國", "no": "64", "name": "松江城", "location": "島根縣松江市", "stamp": "松江城天守内受付窗口", "status": "天守"}, {"region": "中國", "no": "65", "name": "月山富田城", "location": "島根縣安來市", "stamp": "安來市立歴史資料館", "status": "城跡"}, {"region": "中國", "no": "66", "name": "津和野城", "location": "島根縣津和野町", "stamp": "リフト茶屋", "status": "城跡"}, {"region": "中國", "no": "67", "name": "津山城", "location": "岡山縣津山市", "stamp": "津山城備中櫓受付", "status": "城跡"}, {"region": "中國", "no": "68", "name": "備中松山城", "location": "岡山縣高梁市", "stamp": "備中松山城券売所", "status": "天守"}, {"region": "中國", "no": "69", "name": "鬼之城", "location": "岡山縣總社市", "stamp": "鬼城山遊客中心", "status": "城跡"}, {"region": "中國", "no": "70", "name": "岡山城", "location": "岡山縣岡山市", "stamp": "岡山城天守閣入口", "status": "城跡"}, {"region": "中國", "no": "71", "name": "福山城", "location": "廣島縣福山市", "stamp": "福山城天守閣内(售票口)", "status": "城跡"}, {"region": "中國", "no": "72", "name": "郡山城", "location": "廣島縣安藝高田市", "stamp": "安藝高田市吉田歴史民俗資料館", "status": "城跡"}, {"region": "中國", "no": "73", "name": "廣島城", "location": "廣島縣廣島市", "stamp": "1樓博物館商店", "status": "城跡"}, {"region": "中國", "no": "74", "name": "岩國城", "location": "山口縣岩國市", "stamp": "岩國城受付窗口(天守內)", "status": "城跡"}, {"region": "中國", "no": "75", "name": "萩城", "location": "山口縣萩市", "stamp": "本丸入口料金所", "status": "城跡"}, {"region": "四國", "no": "76", "name": "德島城", "location": "德島縣德島市", "stamp": "徳島市立徳島城博物館受付窗口 德島市教育委員會社會教育課程窗口 德島中央公園東側駐車場入口事務所", "status": "城跡"}, {"region": "四國", "no": "77", "name": "高松城", "location": "香川縣高松市", "stamp": "高松城東・西入口 玉藻公園管理事務所", "status": "城跡"}, {"region": "四國", "no": "78", "name": "丸龜城", "location": "香川縣丸龜市", "stamp": "丸龜城天守（天守閉館期間在丸龜市立資料館）", "status": "天守"}, {"region": "四國", "no": "79", "name": "今治城", "location": "愛媛縣今治市", "stamp": "今治城管理事務所（天守閣内）", "status": "城跡"}, {"region": "四國", "no": "80", "name": "湯築城", "location": "愛媛縣松山市", "stamp": "湯築城資料館", "status": "城跡"}, {"region": "四國", "no": "81", "name": "松山城", "location": "愛媛縣松山市", "stamp": "松山城天守入口", "status": "天守"}, {"region": "四國", "no": "82", "name": "大洲城", "location": "愛媛縣大洲市", "stamp": "台所櫓入口（大洲城内入口）", "status": "城跡"}, {"region": "四國", "no": "83", "name": "宇和島城", "location": "愛媛縣宇和島市", "stamp": "宇和島城天守", "status": "天守"}, {"region": "四國", "no": "84", "name": "高知城", "location": "高知縣高知市", "stamp": "本丸御殿入口", "status": "天守"}, {"region": "九州", "no": "85", "name": "福岡城", "location": "福岡縣福岡市", "stamp": "福岡城往昔探訪館、鴻臚館跡展示館", "status": "城跡"}, {"region": "九州", "no": "86", "name": "大野城", "location": "福岡縣大野城市", "stamp": "福岡縣立四王寺縣民之森管理事務所、太宰府市文化ふれあい館、大宰府展示館、大野城市綜合体育館", "status": "城跡"}, {"region": "九州", "no": "87", "name": "名護屋城", "location": "佐賀縣唐津市", "stamp": "佐賀縣立名護屋城博物館", "status": "城跡"}, {"region": "九州", "no": "88", "name": "吉野里", "location": "佐賀縣吉野里町", "stamp": "吉野里歴史公園東口", "status": "城跡"}, {"region": "九州", "no": "89", "name": "佐賀城", "location": "佐賀縣佐賀市", "stamp": "佐賀城本丸歴史館受付", "status": "城跡"}, {"region": "九州", "no": "90", "name": "平戶城", "location": "長崎縣平戶市", "stamp": "平戶城天守閣", "status": "城跡"}, {"region": "九州", "no": "91", "name": "島原城", "location": "長崎縣島原市", "stamp": "島原城受付窗口", "status": "城跡"}, {"region": "九州", "no": "92", "name": "熊本城", "location": "熊本縣熊本市", "stamp": "頰當御門、櫨方門、須戶口門、不開門（2016年熊本地震後，改在櫻之馬場遊客服務處，及熊本城二之丸停車場內之「熊本城二之丸憩所」）", "status": "城跡"}, {"region": "九州", "no": "93", "name": "人吉城", "location": "熊本縣人吉市", "stamp": "人吉城歷史館", "status": "城跡"}, {"region": "九州", "no": "94", "name": "大分府内城", "location": "大分縣大分市", "stamp": "大分城址公園内、文化會館北西側事務所2樓出入口", "status": "城跡"}, {"region": "九州", "no": "95", "name": "岡城", "location": "大分縣竹田市", "stamp": "觀覧料徴收所（総役所跡）", "status": "城跡"}, {"region": "九州", "no": "96", "name": "飫肥城", "location": "宮崎縣日南市", "stamp": "飫肥城歴史資料館", "status": "城跡"}, {"region": "九州", "no": "97", "name": "鹿兒島城", "location": "鹿兒島縣鹿兒島市", "stamp": "鹿兒島縣歴史資料中心黎明館内綜合案内所", "status": "城跡"}, {"region": "沖繩", "no": "98", "name": "今歸仁城", "location": "沖繩縣今歸仁村", "stamp": "今歸仁村御城交流中心", "status": "城跡"}, {"region": "沖繩", "no": "99", "name": "中城城", "location": "沖繩縣中城村", "stamp": "管理事務所窗口", "status": "城跡"}, {"region": "沖繩", "no": "100", "name": "首里城", "location": "沖繩縣那霸市", "stamp": "首里杜館、系圖座・用物座、北殿", "status": "城跡"}];
         
         // Group by region
@@ -385,8 +417,8 @@
             regions[c.region].push(c);
         });
 
-        // Load saved state from localStorage
-        const savedStamps = JSON.parse(localStorage.getItem('japan100castles_stamps')) || {};
+        // Load saved state from localStorage (fallback)
+        let savedStamps = JSON.parse(localStorage.getItem('japan100castles_stamps')) || {};
 
         const appDiv = document.getElementById('app');
         
@@ -404,21 +436,46 @@
             }
         }
 
-        function toggleStamp(no) {
+        let saveTimeout = null;
+
+        window.toggleStamp = function(no) {
             savedStamps[no] = !savedStamps[no];
-            localStorage.setItem('japan100castles_stamps', JSON.stringify(savedStamps));
             
+            // Update UI immediately
             const card = document.getElementById(`card-${no}`);
+            const checkbox = card.querySelector('input[type="checkbox"]');
             if(savedStamps[no]) {
                 card.classList.add('stamped');
+                checkbox.checked = true;
             } else {
                 card.classList.remove('stamped');
+                checkbox.checked = false;
             }
             updateStats();
+
+            // Save to LocalStorage
+            localStorage.setItem('japan100castles_stamps', JSON.stringify(savedStamps));
+            
+            // Save to Firestore with Debounce
+            if (currentUser) {
+                if (saveTimeout) clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(async () => {
+                    try {
+                        await setDoc(doc(db, "users", currentUser.uid), {
+                            stamps: savedStamps,
+                            lastUpdated: new Date()
+                        }, { merge: true });
+                        console.log("Auto-saved to Firestore");
+                    } catch (e) {
+                        console.error("Error saving to Firestore", e);
+                    }
+                }, 2000); // 延遲 2 秒上傳
+            }
         }
 
-        let html = '';
-        for (const [region, regionCastles] of Object.entries(regions)) {
+        function renderApp() {
+            let html = '';
+            for (const [region, regionCastles] of Object.entries(regions)) {
             html += `
                 <details class="region-section" open>
                     <summary class="region-title">
@@ -472,8 +529,59 @@
             `;
         }
         
-        appDiv.innerHTML = html;
-        updateStats();
+            appDiv.innerHTML = html;
+            updateStats();
+        }
+        
+        // Initial render with local data
+        renderApp();
+
+        // Auth Logic
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userInfo = document.getElementById('user-info');
+        const userName = document.getElementById('user-name');
+        const userAvatar = document.getElementById('user-avatar');
+
+        loginBtn.addEventListener('click', () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).catch(error => console.error("Login failed", error));
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth).catch(error => console.error("Logout failed", error));
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                loginBtn.style.display = 'none';
+                userInfo.style.display = 'flex';
+                userName.innerText = user.displayName;
+                userAvatar.src = user.photoURL;
+                
+                // Fetch user data from Firestore
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data.stamps) {
+                            // Merge local with cloud
+                            savedStamps = { ...savedStamps, ...data.stamps }; 
+                            localStorage.setItem('japan100castles_stamps', JSON.stringify(savedStamps));
+                            renderApp(); // Re-render to show merged stamps
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error fetching data from Firestore", e);
+                }
+            } else {
+                currentUser = null;
+                loginBtn.style.display = 'flex';
+                userInfo.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
